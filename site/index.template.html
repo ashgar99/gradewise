@@ -377,25 +377,6 @@
     .moodle .drag img { width: 22px; height: 22px; }
     .moodle .hint { margin: 0; flex: 1 1 200px; font-size: 14px; }
     .moodle-copy { background: none; border: 0; color: var(--blue); font: inherit; font-size: 14px; cursor: pointer; padding: 0; }
-    #import-msg { margin-top: 12px; }
-    .ygroup + .ygroup { margin-top: 26px; }
-    .ygroup .year-head select { height: 40px; }
-    .imod { padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.03); box-shadow: inset 0 0 0 1px var(--line); margin-top: 12px; }
-    .imod-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 12px; }
-    .imod-head b { flex: 1 1 220px; color: #fff; font-weight: 500; line-height: 1.35; }
-    .imod-head .cred { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--softer); }
-    .imod-head .cred input { width: 76px; height: 36px; }
-    .items { display: grid; gap: 8px; }
-    .item { display: grid; grid-template-columns: minmax(0, 1fr) 84px 84px 40px; gap: 8px; align-items: center; }
-    .item-head { font-size: 13px; color: var(--softer); }
-    .item input { height: 40px; }
-    .item .info, .item .late { grid-column: 1 / -1; font-size: 13px; color: var(--softer); margin-top: -2px; }
-    .item .late { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--soft); }
-    .item .late .why { flex: 1 1 260px; }
-    .item .late .check { margin: 0; font-size: 13px; flex-basis: 100%; }
-    .item .late .check input { height: 16px; width: 16px; margin-top: 0; }
-    .imod-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; }
-    .imod-foot .note { margin: 0; flex: 1 1 220px; }
     .rule { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px var(--line); margin-top: 8px; cursor: pointer; }
     .rule input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--blue); flex: none; }
     .rule b { display: block; color: #fff; font-weight: 500; }
@@ -404,7 +385,6 @@
     details.paste { margin-top: 12px; }
     details.paste summary { cursor: pointer; color: var(--soft); font-size: 14px; }
     details.paste textarea { margin-top: 10px; min-height: 120px; }
-    @media (max-width: 560px) { .item { grid-template-columns: minmax(0, 1fr) 64px 64px 36px; gap: 6px; } }
     @media (max-width: 560px) { .mod { grid-template-columns: minmax(0, 1fr) 72px 72px 36px; gap: 6px; } }
 
   </style>
@@ -443,15 +423,13 @@
           <div>
             <div class="panel" id="moodle">
               <h3>Start from Moodle</h3>
-              <p class="lead">Drag this button onto your bookmarks bar, then click it on any Moodle page. It collects your marks, Turnitin grades, assessment weights and submission dates, and opens them here. Nothing is uploaded.</p>
+              <p class="lead">Drag this button onto your bookmarks bar, then click it on any Moodle page. It works out your classification from your Moodle marks in a panel on the page, and can save the result here.</p>
               <div class="moodle">
                 <a class="drag js-bm" id="bookmarklet" href="{{BOOKMARKLET}}" draggable="true" data-hint="hint"><img src="logo.svg" alt="">Gradewise</a>
                 <p class="hint" id="hint">Show your bookmarks bar with Cmd + Shift + B on a Mac, or Ctrl + Shift + B on Windows.</p>
               </div>
               <button class="moodle-copy" id="copy" type="button">Can't drag it? Copy the bookmark instead</button>
-              <p class="pill warn" id="import-msg" hidden></p>
             </div>
-            <div class="panel" id="review" hidden></div>
             <div class="panel">
               <h3>How your degree is weighted</h3>
               <p class="lead">Check your programme handbook. Most UK degrees count the second and final years, with the final year counting more.</p>
@@ -472,7 +450,7 @@
             </div>
             <div class="panel rules-grid" id="rules">
               <h3>Your university's rules</h3>
-              <p class="lead">Upload your degree regulations or programme handbook. Gradewise looks for the year weightings, grade boundaries and late penalties, quotes what it found, and lets you check each one before it is used.</p>
+              <p class="lead">Upload your degree regulations or programme handbook. Gradewise looks for the year weightings and grade boundaries, quotes what it found, and lets you check each one before it is used.</p>
               <label class="drop" id="rdrop" for="rfile">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
                 <span>Drop your regulations here, or click to choose a file</span>
@@ -482,19 +460,6 @@
               <details class="paste"><summary>Or paste the text instead</summary><textarea id="rtext" placeholder="Paste the section on classification, weighting or late submission."></textarea><div class="actions"><button class="b ghost" id="rfind" type="button">Find the rules</button></div></details>
               <p class="status-line" id="rules-status"></p>
               <div id="found"></div>
-              <h4>Late penalty</h4>
-              <div class="row">
-                <div class="field sm"><label for="lp-amt">Deduct</label><input id="lp-amt" type="number" min="0" step="0.5" placeholder="e.g. 5"></div>
-                <div class="field"><label for="lp-unit">Of</label><select id="lp-unit"><option value="marks">marks</option><option value="percent">% of the mark awarded</option></select></div>
-                <div class="field"><label for="lp-per">For each</label><select id="lp-per"><option value="calendar">day late</option><option value="working">working day late</option></select></div>
-              </div>
-              <div class="row" style="margin-top: 12px;">
-                <div class="field"><label for="lp-zero">Mark becomes 0 after this many days</label><input id="lp-zero" type="number" min="0" step="1" placeholder="Leave blank if never"></div>
-                <div class="field"><label for="lp-cap">Late work is capped at</label><input id="lp-cap" type="number" min="0" max="100" step="1" placeholder="Leave blank if not capped"></div>
-              </div>
-              <div class="row" style="margin-top: 12px;">
-                <div class="field"><label for="lp-floor">A passing mark never drops below</label><input id="lp-floor" type="number" min="0" max="100" step="1" placeholder="Leave blank if there is no floor"></div>
-              </div>
               <h4>Grade boundaries</h4>
               <div class="row">
                 <div class="field sm"><label for="b0">First</label><input id="b0" type="number" min="0" max="100" step="1"></div>

@@ -13,7 +13,7 @@
 
 ## Features ✨
 
-- Import your marks straight from Moodle with the Gradewise bookmark, including Turnitin grades, assessment weights and submission dates.
+- Works out your classification on Moodle itself, from your marks, Turnitin grades, assessment weights and submission dates.
 - Upload your university's regulations, and Gradewise finds the year weightings, grade boundaries and late penalty rules, quoting each one for you to check.
 - See which assessments were submitted late and the penalty your rules would give, with a switch to apply it.
 - Enter or edit your modules, credits and marks for your second and final years. Leave marks blank if they have not come back yet.
@@ -24,28 +24,17 @@
 - Runs entirely in your browser. Nothing is uploaded.
 
 
-## Importing from Moodle 🎓
+## Using Gradewise on Moodle 🎓
 
 1. Go to [Gradewise](https://ashgar99.github.io/gradewise/) and drag the **Gradewise** button from *Start from Moodle* onto your bookmarks bar.
 2. Log in to Moodle, click the bookmark, and choose **This module** or **All modules**. Keep the tab open while your marks are collected.
-3. Click **Open in Gradewise**. Check each module, add any assessments that are missing, and choose which academic year counts as your second and final year.
-4. Click **Use these marks** to fill in the calculator.
+3. A panel shows your weighted average and classification so far. Choose which academic year counts as your second and final year, and set the weighting.
+4. Click a module to check its assessments. You can change weights and marks, or add assessments that are missing.
+5. Open **Your university's rules** and upload your degree regulations (PDF, Word or text). Gradewise finds the year weightings, grade boundaries and late penalty rules, quotes the sentence each came from, and you untick anything it has misread before clicking **Use these rules**.
+6. Late assessments are marked **Late** with the penalty your rules would give. Tick **Apply this penalty** to use it. Moodle marks sometimes already include a penalty, so only apply it if your mark has not been reduced.
+7. Click **Save to Gradewise** to keep the result in the calculator on the website.
 
-Gradewise reads your marks from each assignment page, the Turnitin submissions table and, where your university shows it, the Moodle gradebook, which also gives each assessment's weight. Where no weights are shown, assessments count equally until you enter them. Module credits are read from names such as "(30Cr)" where possible; otherwise check them yourself.
-
-### Late penalties
-
-Late assessments are flagged with how late they were. Once your late penalty rules are filled in, Gradewise shows the penalty they would give, and you can tick **Apply this penalty** to use it. Moodle sometimes shows marks that already include a penalty, so only apply it if your mark has not already been reduced.
-
-### Your university's rules
-
-Drop your degree regulations or programme handbook (PDF, Word or text) into *Your university's rules*, or paste the relevant section. Gradewise looks for:
-
-- year weightings, such as "Level 5 contributes 25% and Level 6 contributes 75%";
-- classification boundaries, such as "First Class Honours: 70% and above";
-- late penalties, such as "5 marks deducted for each working day late", a mark of zero after a number of days, a cap on late work, or a rule that a penalty cannot take a passing mark below the pass mark.
-
-Each rule it finds is shown with the sentence it came from, so you can untick anything it has misread. You can also enter or change any rule by hand.
+Gradewise reads marks from each assignment page, the Turnitin submissions table and, where your university shows it, the Moodle gradebook, which also gives each assessment's weight. Where no weights are shown, assessments count equally until you enter them. Module credits are read from names such as "(30Cr)" where possible; otherwise check them yourself.
 
 
 ## How it is worked out 🧮
@@ -76,12 +65,12 @@ Works in current versions of Chrome, Edge, Brave, Firefox and Safari, on compute
 
 Gradewise is a single page with no server. Your marks are stored only in your own browser's local storage on that device.
 
-The Moodle bookmark only talks to your own Moodle site, using the login you already have. It passes your marks to Gradewise in the part of the address after the `#` sign, which browsers never send to a server, and Gradewise removes them from the address as soon as the page opens. Regulations you upload are read in your browser and never leave your computer.
+The Moodle bookmark only talks to your own Moodle site, using the login you already have, and works everything out on the page. Regulations you upload are read in your browser and never leave your computer. **Save to Gradewise** passes your module marks to the website in the part of the address after the `#` sign, which browsers never send to a server, and Gradewise removes them from the address as soon as the page opens.
 
 
 ## Development 🧩
 
-The page lives in [`docs/`](docs): `gradewise.js` for the calculator and `gradewise-moodle.js` for imported marks, rules and late penalties. The Moodle bookmark is [`gradewise-import.js`](gradewise-import.js). After editing it, run `node build.js` to regenerate `bookmarklet.txt` and `docs/index.html` from `site/index.template.html`.
+The page lives in [`docs/`](docs): `gradewise.js` for the calculator and `gradewise-moodle.js` for saved Moodle marks and reading regulations. The Moodle bookmark is [`gradewise-import.js`](gradewise-import.js). After editing it, run `node build.js` to regenerate `bookmarklet.txt` and `docs/index.html` from `site/index.template.html`.
 
 
 ## Unikit 🎒
