@@ -1,0 +1,42 @@
+# Gradewise
+
+> Gradewise is a free, open-source UK degree classification calculator. It works out your weighted average, your classification so far and the marks you need for a First, 2:1, 2:2 or Third, for three-year and four-year degrees, years abroad, integrated master’s and Scottish honours.
+
+- Website: https://ashgar99.github.io/gradewise/
+- Source code: https://github.com/ashgar99/gradewise
+- Licence: MIT. Free, with no account, adverts or tracking.
+- Part of Unikit, free tools for university students: https://ashgar99.github.io/
+
+## Features
+
+- Calculates your weighted average and classification so far
+- Shows the average you need for a First, 2:1, 2:2 and Third
+- Presets for three-year, four-year, year abroad, integrated master’s and Scottish honours degrees
+- Imports marks, weights and late submissions from Moodle
+- Reads your university’s regulations for weightings, boundaries and late penalties
+
+## Questions and answers
+
+### What is Gradewise?
+
+Gradewise is a free, open-source UK degree classification calculator. It works out your weighted average, your classification so far and the marks you need for each grade boundary, and can import your marks from Moodle.
+
+### How is a UK degree classification calculated?
+
+Each counted year’s average is weighted by module credits, then the years are combined using your degree’s weighting, often one third for second year and two thirds for final year. A First usually needs 70% or more, a 2:1 60%, a 2:2 50% and a Third 40%.
+
+### What do I need to get a First?
+
+Enter the marks you have so far in Gradewise and it shows the average you need across your remaining credits to reach 70%, the usual boundary for a First.
+
+### Does first year count towards my degree?
+
+At most UK universities in England, Wales and Northern Ireland, first year does not count and only the second and final years do. In Scotland, classification is usually based on years 3 and 4. Always check your degree regulations.
+
+### Does a year abroad count towards my degree classification?
+
+It depends on your university. Some leave the year abroad out, some count it at around 10%, and some classify on the final year alone. Gradewise has presets for each.
+
+### Can Gradewise use my marks from Moodle?
+
+Yes. The Gradewise bookmark reads your assignment and Turnitin marks, weights and submission dates from Moodle, flags late work, and works out your classification in a panel on the page.
