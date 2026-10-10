@@ -58,6 +58,7 @@
       select, .in { font: inherit; font-size: 13px; color: #1d1d1f; background: #f2f2f5; border: 0; border-radius: 8px; padding: 6px 8px; }
       select:focus, .in:focus { outline: 2px solid #c97a00; outline-offset: 0; }
       .in { width: 52px; text-align: right; }
+      select.wide { width: 100%; margin-bottom: 4px; }
       .in.name { width: auto; flex: 1 1 auto; min-width: 0; text-align: left; }
       .mod { border-radius: 12px; background: #fafafb; box-shadow: inset 0 0 0 1px #ececf0; margin-top: 8px; }
       .mod > button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
@@ -200,7 +201,21 @@
   const r1 = n => Math.round(n * 10) / 10;
   const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-  const st = { modules: [], map: {}, w: [33, 67], open: {}, found: [],
+  // Common UK degree structures (the same list as the Gradewise page): which years count, and how much
+  const PRESETS = [
+    ['Three-year bachelor\u2019s', [['3-12', 'Years 2 and 3, 1:2', [['Year 2', 33.3], ['Year 3', 66.7]]], ['3-13', 'Years 2 and 3, 1:3', [['Year 2', 25], ['Year 3', 75]]],
+      ['3-4060', 'Years 2 and 3, 40:60', [['Year 2', 40], ['Year 3', 60]]], ['3-3070', 'Years 2 and 3, 30:70', [['Year 2', 30], ['Year 3', 70]]],
+      ['3-eq', 'Years 2 and 3, equal', [['Year 2', 50], ['Year 3', 50]]], ['3-final', 'Final year only', [['Year 3', 100]]]]],
+    ['Four-year with a year abroad or placement', [['4a-12', 'Year away not counted, 1:2', [['Year 2', 33.3], ['Year 4', 66.7]]], ['4a-13', 'Year away not counted, 1:3', [['Year 2', 25], ['Year 4', 75]]],
+      ['4a-4060', 'Year away not counted, 40:60', [['Year 2', 40], ['Year 4', 60]]], ['4a-151075', 'Year away counts 10%, 15:10:75', [['Year 2', 15], ['Year 3 (away)', 10], ['Year 4', 75]]],
+      ['4a-301060', 'Year away counts 10%, 30:10:60', [['Year 2', 30], ['Year 3 (away)', 10], ['Year 4', 60]]], ['4a-final', 'Final year only', [['Year 4', 100]]]]],
+    ['Integrated master\u2019s', [['im4-104050', 'Four years, 10:40:50', [['Year 2', 10], ['Year 3', 40], ['Year 4', 50]]], ['im4-203050', 'Four years, 20:30:50', [['Year 2', 20], ['Year 3', 30], ['Year 4', 50]]],
+      ['im4-204040', 'Four years, 20:40:40', [['Year 2', 20], ['Year 3', 40], ['Year 4', 40]]], ['im5-10103050', 'Five years with a year away, 10:10:30:50', [['Year 2', 10], ['Year 3 (away)', 10], ['Year 4', 30], ['Year 5', 50]]]]],
+    ['Scottish honours', [['sc-eq', 'Years 3 and 4, equal', [['Year 3', 50], ['Year 4', 50]]], ['sc-4060', 'Years 3 and 4, 40:60', [['Year 3', 40], ['Year 4', 60]]],
+      ['sc-3070', 'Years 3 and 4, 30:70', [['Year 3', 30], ['Year 4', 70]]], ['sc-final', 'Year 4 only', [['Year 4', 100]]], ['sc-im', 'Integrated master\u2019s, 20:30:50', [['Year 3', 20], ['Year 4', 30], ['Year 5', 50]]]]]
+  ];
+  const presetOf = id => { for (const [, items] of PRESETS) for (const it of items) if (it[0] === id) return it; return null; };
+  const st = { modules: [], map: {}, preset: '3-12', dy: [], open: {}, found: [],
     rules: { amt: '', unit: 'marks', per: 'calendar', zero: '', cap: '', floor: '', bounds: [70, 60, 50, 40] } };
   const NAMES = ['a First', 'a 2:1', 'a 2:2', 'a Third'];
   const CLASS = ['First', '2:1', '2:2', 'Third'];
@@ -238,8 +253,8 @@
   };
   const compute = () => {
     let wsum = 0, A = 0, B = 0, cur = 0, curW = 0;
-    [0, 1].forEach(y => {
-      const w = Math.max(0, num(st.w[y]) || 0);
+    st.dy.forEach((d, y) => {
+      const w = Math.max(0, num(d.weight) || 0);
       let T = 0, sum = 0, dc = 0;
       st.modules.filter(m => st.map[m.year] === String(y)).forEach(m => {
         const c = num(m.credits) || 15, mk = moduleMark(m);
@@ -258,6 +273,16 @@
   const NUMW = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, fourteen: 14, fifteen: 15, twenty: 20 };
   const toNum = x => NUMW[String(x).toLowerCase()] !== undefined ? NUMW[String(x).toLowerCase()] : Number(x);
   const NUM = '(\\d+|one|two|three|four|five|six|seven|eight|nine|ten|fourteen|fifteen|twenty)';
+  // "second year", "level 5" or "stage 2" all mean year 2, and so on
+  const yearKey = who => {
+    who = who.toLowerCase().replace(/\s+/g, ' ');
+    if (/final/.test(who)) return 'final';
+    if (/second|year 2|stage 2|level 5/.test(who)) return '2';
+    if (/third|year 3|stage 3|level 6/.test(who)) return '3';
+    if (/fourth|year 4|stage 4|level 7/.test(who)) return '4';
+    if (/fifth|year 5|stage 5/.test(who)) return '5';
+    return '1';
+  };
   const findRules = text => {
     const found = [], seenKey = {};
     const add = (key, value, label, quote) => { if (!seenKey[key]) { seenKey[key] = 1; found.push({ key, value, label, quote, use: true }); } };
@@ -279,16 +304,15 @@
         if (cap !== null) add('cap', cap, `Late work is capped at ${cap}`, s);
       }
       if (/weight|count|contribut|ratio/i.test(s)) {
-        const roles = { second: null, final: null };
-        const rx = /(\d{1,3}(?:\.\d+)?)\s*%[^.%]{0,60}?\b(second|final|third|fourth|level\s*[456]|year\s*[234]|stage\s*[234])\b|\b(second|final|third|fourth|level\s*[456]|year\s*[234]|stage\s*[234])\b(?:\s*year)?[^.%\d]{0,60}?(\d{1,3}(?:\.\d+)?)\s*%/gi;
+        const ws = {}, keys = [];
+        const rx = /(\d{1,3}(?:\.\d+)?)\s*%[^.%]{0,60}?\b(second|third|fourth|fifth|final|level\s*[4-7]|year\s*[1-5]|stage\s*[1-5])\b|\b(second|third|fourth|fifth|final|level\s*[4-7]|year\s*[1-5]|stage\s*[1-5])\b(?:\s*year)?[^.%\d]{0,60}?(\d{1,3}(?:\.\d+)?)\s*%/gi;
         let w;
         while ((w = rx.exec(s))) {
-          const val = Number(w[1] || w[4]), who = (w[2] || w[3]).toLowerCase().replace(/\s+/g, ' ');
-          const role = /second|level 5|year 2|stage 2/.test(who) ? 'second' : 'final';
-          if (val > 0 && val <= 100 && roles[role] === null) roles[role] = val;
+          const val = Number(w[1] || w[4]), key = yearKey(w[2] || w[3]);
+          if (val > 0 && val <= 100 && ws[key] === undefined) { ws[key] = val; keys.push(key); }
         }
-        if ((m = /\b(1|one)\s*:\s*(2|3|two|three)\b/i.exec(s)) && roles.second === null) { const k = toNum(m[2]); roles.second = r1(100 / (1 + k)); roles.final = r1(100 * k / (1 + k)); }
-        if (roles.second !== null && roles.final !== null) add('weights', [roles.second, roles.final], `Second year ${roles.second}%, final year ${roles.final}%`, s);
+        if ((m = /\b(1|one)\s*:\s*(2|3|two|three)\b/i.exec(s)) && !keys.length) { const k = toNum(m[2]); ws['2'] = r1(100 / (1 + k)); ws.final = r1(100 * k / (1 + k)); keys.push('2', 'final'); }
+        if (keys.length >= 2 || ws.final === 100) add('weights', ws, keys.map(k => `${k === 'final' ? 'Final year' : 'Year ' + k} ${ws[k]}%`).join(', '), s);
       }
       [['first(?:[- ]class)?', 0], ['upper second|2[.:]1', 1], ['lower second|2[.:]2', 2], ['third(?:[- ]class)?', 3]].forEach(([n, i]) => {
         const a = new RegExp('\\b(?:' + n + ')\\b(?: class)?(?: honours)?[^.\\d]{0,40}?(\\d{2})(?:\\.0+)?\\s*%?\\s*(?:and|or|\\+|-|to|\\u2013)', 'i').exec(s) ||
@@ -328,10 +352,20 @@
 
   // ---------- The result view ----------
 
+  const usePreset = id => {
+    const p = presetOf(id);
+    st.preset = id;
+    if (!p) return;
+    st.dy = p[2].map(([label, weight]) => ({ label, weight }));
+    // Years marked "away" usually have no Moodle modules, so skip them when matching
+    const slots = st.dy.map((d, i) => i).filter(i => !/away/i.test(st.dy[i].label));
+    (st.acad || []).forEach((y, i, all) => { const k = slots.length - (all.length - i); st.map[y] = k >= 0 ? String(slots[k]) : '-1'; });
+  };
   const showResults = modules => {
     st.modules = modules;
     const years = [...new Set(modules.map(m => m.year))].sort();
-    years.forEach((y, i) => { st.map[y] = i === years.length - 1 ? '1' : i === years.length - 2 ? '0' : '-1'; });
+    st.acad = years;
+    usePreset(st.preset);
     modules.forEach(m => m.items.forEach(it => { it.apply = false; }));
     finished = true;
     $('.keep').hidden = true;
@@ -355,9 +389,13 @@
         return `<div><span>Needed for ${NAMES[i]}</span><span>${need <= 0 ? 'Secured' : need > 100 ? 'Out of reach' : r1(need).toFixed(1) + '%'}</span></div>`;
       }).join('') + '</div><div class="note2">Average needed across the credits still to come.</div>';
     }
-    h += '<h4>Years</h4>' + Object.keys(st.map).sort().reverse().map(y => `<div class="yr"><span>${esc(y)}</span><select data-year="${esc(y)}">` +
-      [['1', 'Final year'], ['0', 'Second year'], ['-1', 'Does not count']].map(([v, t]) => `<option value="${v}"${st.map[y] === v ? ' selected' : ''}>${t}</option>`).join('') + '</select></div>').join('') +
-      `<div class="yr"><span>Weighting, second : final</span><span><input class="in" data-w="0" value="${esc(st.w[0])}"> : <input class="in" data-w="1" value="${esc(st.w[1])}"></span></div>`;
+    h += '<h4>Your degree</h4><select class="wide" data-preset>' + PRESETS.map(([g, items]) => `<optgroup label="${esc(g)}">` +
+      items.map(([id, label]) => `<option value="${id}"${st.preset === id ? ' selected' : ''}>${esc(label)}</option>`).join('') + '</optgroup>').join('') +
+      `<option value="custom"${st.preset === 'custom' ? ' selected' : ''}>Custom weights</option></select>` +
+      st.dy.map((d, i) => `<div class="yr"><span>${esc(d.label)}</span><span><input class="in" data-dw="${i}" value="${esc(d.weight)}">%</span></div>`).join('') +
+      '<h4>Your years on Moodle</h4>' + (st.acad || []).slice().reverse().map(y => `<div class="yr"><span>${esc(y)}</span><select data-year="${esc(y)}">` +
+      st.dy.map((d, i) => `<option value="${i}"${st.map[y] === String(i) ? ' selected' : ''}>${esc(d.label)}</option>`).join('') +
+      `<option value="-1"${st.map[y] === '-1' ? ' selected' : ''}>Does not count</option></select></div>`).join('');
     h += '<h4>Modules</h4>' + st.modules.map((m, mi) => {
       const mk = moduleMark(m), open = st.open[mi], late = m.items.some(it => it.lateHours);
       let body = '';
@@ -405,7 +443,7 @@
     const t = e.target, d = t.dataset;
     if (d.ik) { const it = st.modules[d.m].items[d.i]; it[d.ik] = d.ik === 'name' ? t.value : (t.value === '' ? null : t.value); if (d.ik === 'name') return; }
     else if (d.mk) st.modules[d.m][d.mk] = t.value;
-    else if (d.w) st.w[d.w] = t.value;
+    else if (d.dw) { st.dy[d.dw].weight = t.value; st.preset = 'custom'; }
     else if (d.r) st.rules[d.r] = t.value;
     else if (d.b) st.rules.bounds[d.b] = t.value;
     else return;
@@ -414,6 +452,7 @@
   $('.results').addEventListener('change', async e => {
     const t = e.target, d = t.dataset;
     if (d.year) { st.map[d.year] = t.value; render(); }
+    else if (d.preset !== undefined) { if (t.value !== 'custom') usePreset(t.value); else st.preset = 'custom'; render(); }
     else if (d.pen) { const [m, i] = d.pen.split('.'); st.modules[m].items[i].apply = t.checked; render(); }
     else if (d.use !== undefined) st.found[d.use].use = t.checked;
     else if (d.rfile !== undefined && t.files[0]) {
@@ -437,7 +476,10 @@
     else if (d.apply !== undefined) {
       st.found.filter(f => f.use).forEach(f => {
         if (f.key === 'penalty') Object.assign(st.rules, f.value);
-        else if (f.key === 'weights') st.w = f.value.slice();
+        else if (f.key === 'weights') {
+          st.preset = 'custom';
+          st.dy.forEach((d, i) => { const n = (/(\d)/.exec(d.label) || [])[1]; if (n && f.value[n] !== undefined) d.weight = f.value[n]; else if (i === st.dy.length - 1 && f.value.final !== undefined) d.weight = f.value.final; });
+        }
         else if (/^bound/.test(f.key)) st.rules.bounds[Number(f.key.slice(5))] = f.value;
         else st.rules[f.key] = f.value;
       });
@@ -446,9 +488,9 @@
   });
   // Hand the finished marks to the Gradewise page, in the part of the address never sent to a server
   $('.go').onclick = () => {
-    const years = [[], []];
-    st.modules.forEach(m => { const y = st.map[m.year]; if (y === '0' || y === '1') { const mk = moduleMark(m); years[y].push({ name: m.name, credits: num(m.credits) || 15, mark: mk === null ? '' : mk }); } });
-    const data = { v: 2, years, w: st.w.map(Number), bounds: st.rules.bounds.map(Number) };
+    const years = st.dy.map(d => ({ label: d.label, weight: num(d.weight) || 0, mods: [] }));
+    st.modules.forEach(m => { const y = years[st.map[m.year]]; if (y) { const mk = moduleMark(m); y.mods.push({ name: m.name, credits: num(m.credits) || 15, mark: mk === null ? '' : mk }); } });
+    const data = { v: 3, preset: st.preset, years, bounds: st.rules.bounds.map(Number) };
     const bytes = new TextEncoder().encode(JSON.stringify(data));
     let bin = '';
     bytes.forEach(x => { bin += String.fromCharCode(x); });

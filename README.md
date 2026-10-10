@@ -17,7 +17,7 @@
 - Upload your university's regulations, and Gradewise finds the year weightings, grade boundaries and late penalty rules, quoting each one for you to check.
 - See which assessments were submitted late and the penalty your rules would give, with a switch to apply it.
 - Enter or edit your modules, credits and marks for your second and final years. Leave marks blank if they have not come back yet.
-- Choose a common weighting (1:2, 1:3, 40:60, equal, or final year only) or set your own.
+- Choose your degree's structure: three-year bachelor's, four-year degrees with a year abroad or placement, integrated master's (four or five years) or Scottish honours, each with the weightings UK universities commonly use. You can also set your own years and weights.
 - Shows your weighted average so far, your classification, and when you are within 2% of the next boundary.
 - Works out the average you need across your remaining modules for a First, 2:1, 2:2 and Third.
 - Remembers your marks in your browser, so you can come back after each result.
@@ -37,10 +37,24 @@
 Gradewise reads marks from each assignment page, the Turnitin submissions table and, where your university shows it, the Moodle gradebook, which also gives each assessment's weight. Where no weights are shown, assessments count equally until you enter them. Module credits are read from names such as "(30Cr)" where possible; otherwise check them yourself.
 
 
+## Degree structures 🏛️
+
+UK universities set their own rules, so check your degree regulations. Gradewise includes the structures they most often use:
+
+| Degree | Years that count | Common weightings |
+| --- | --- | --- |
+| Three-year bachelor's (England, Wales, Northern Ireland) | Years 2 and 3 | 1:2, 1:3, 40:60, 30:70, equal, or final year only |
+| Four-year bachelor's with a year abroad or placement | Years 2 and 4, sometimes the year away too | 1:2 or 1:3 with the year away not counted, or 15:10:75 and 30:10:60 with it counted at 10% |
+| Integrated master's (MEng, MSci and similar) | Years 2, 3 and 4 | 10:40:50, 20:30:50 or 20:40:40; five-year courses with a year away 10:10:30:50 |
+| Scottish honours | Years 3 and 4 | Equal, 40:60 or 30:70, or year 4 only after a year abroad |
+
+These are based on published regulations, such as the [University of Bristol's weightings](https://www.bristol.ac.uk/media-library/sites/academic-quality/documents/taught-code/annexes/weightings-for-degree-classification-24-25.pdf) and the [University of Edinburgh's classification rules](https://registryservices.ed.ac.uk/academic-services/students/assessment/degree-classification). Some universities also discount your lowest marks or use a second calculation for borderline results, which Gradewise does not apply.
+
+
 ## How it is worked out 🧮
 
 1. Each year's average is weighted by credits, so a 30-credit module counts twice as much as a 15-credit one.
-2. Year averages are combined using your degree's weighting.
+2. Year averages are combined using your degree's weighting. Only the years that count are included, and weights that do not add up to 100% are scaled.
 3. Modules without a mark are treated as one shared average, and Gradewise solves for the value that reaches each boundary.
 
 Rules vary between universities. Some discount your lowest marks, review borderline cases, or use a "preponderance" rule. Treat Gradewise as a guide and check your programme handbook.

@@ -21,10 +21,10 @@ window.GradewiseExtras = function (g) {
       for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
       var data = JSON.parse(new TextDecoder().decode(bytes));
       if (!data || !data.years) throw new Error('empty');
-      state.years = [0, 1].map(function (y) { return data.years[y] && data.years[y].length ? data.years[y] : [{ name: '', credits: 15, mark: '' }]; });
-      if (data.w) { state.scheme = 'custom'; state.w = data.w; }
+      state.years = data.years.map(function (y) { return { label: y.label, weight: y.weight, mods: y.mods && y.mods.length ? y.mods : [{ name: '', credits: 15, mark: '' }] }; });
+      state.scheme = data.preset || 'custom';
       if (data.bounds) state.rules.bounds = data.bounds;
-      save(); g.sync(); g.renderYears(); syncRules(); g.update();
+      save(); g.sync(); syncRules();
     } catch (e) {
       console.error(e);
     }
@@ -38,6 +38,26 @@ window.GradewiseExtras = function (g) {
   var NUMBERS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, fourteen: 14, fifteen: 15, twenty: 20, thirty: 30 };
   function toNum(s) { s = String(s).toLowerCase(); return NUMBERS[s] !== undefined ? NUMBERS[s] : Number(s); }
   var NUM = '(\\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fourteen|fifteen|twenty|thirty)';
+
+  // "second year", "level 5" or "stage 2" all mean year 2, and so on
+  function yearKey(who) {
+    who = who.toLowerCase().replace(/\s+/g, ' ');
+    if (/final/.test(who)) return 'final';
+    if (/second|year 2|stage 2|level 5/.test(who)) return '2';
+    if (/third|year 3|stage 3|level 6/.test(who)) return '3';
+    if (/fourth|year 4|stage 4|level 7/.test(who)) return '4';
+    if (/fifth|year 5|stage 5/.test(who)) return '5';
+    return '1';
+  }
+  // Apply found weights to the years in your structure, matching by year number, with "final" going to the last year
+  function applyWeights(years, ws) {
+    years.forEach(function (y, i) {
+      var n = (/(\d)/.exec(y.label) || [])[1];
+      if (n && ws[n] !== undefined) y.weight = ws[n];
+      else if (i === years.length - 1 && ws.final !== undefined) y.weight = ws.final;
+    });
+  }
+  window.GradewiseApplyWeights = applyWeights;
 
   function findRules(text) {
     var found = [], seen = {};
@@ -66,17 +86,15 @@ window.GradewiseExtras = function (g) {
         var cap = m[1] ? Number(m[1]) : (/pass mark/i.test(s) ? 40 : null);
         if (cap !== null) add('cap', cap, 'Late work is capped at ' + cap, s);
       }
-      // Year weightings
+      // Year weightings, for any number of years
       if (/weight|count|contribut|ratio/i.test(s)) {
-        var roles = { second: null, final: null }, rx = /(\d{1,3}(?:\.\d+)?)\s*%[^.%]{0,60}?\b(second|final|third|fourth|level\s*[456]|year\s*[234]|stage\s*[234]|part\s*ii)\b|\b(second|final|third|fourth|level\s*[456]|year\s*[234]|stage\s*[234])\b(?:\s*year)?[^.%\d]{0,60}?(\d{1,3}(?:\.\d+)?)\s*%/gi, w;
+        var ws = {}, keys = [], rx = /(\d{1,3}(?:\.\d+)?)\s*%[^.%]{0,60}?\b(second|third|fourth|fifth|final|level\s*[4-7]|year\s*[1-5]|stage\s*[1-5])\b|\b(second|third|fourth|fifth|final|level\s*[4-7]|year\s*[1-5]|stage\s*[1-5])\b(?:\s*year)?[^.%\d]{0,60}?(\d{1,3}(?:\.\d+)?)\s*%/gi, w;
         while ((w = rx.exec(s))) {
-          var val = Number(w[1] || w[4]), who = (w[2] || w[3]).toLowerCase().replace(/\s+/g, ' ');
-          var role = /second|level 5|year 2|stage 2|part ii/.test(who) ? 'second' : 'final';
-          if (val > 0 && val <= 100 && roles[role] === null) roles[role] = val;
+          var val = Number(w[1] || w[4]), key = yearKey(w[2] || w[3]);
+          if (val > 0 && val <= 100 && ws[key] === undefined) { ws[key] = val; keys.push(key); }
         }
-        if ((m = /\b(1|one)\s*:\s*(2|3|two|three)\b/i.exec(s)) && roles.second === null) { var r2 = toNum(m[2]); roles.second = round1(100 / (1 + r2)); roles.final = round1(100 * r2 / (1 + r2)); }
-        if (roles.second !== null && roles.final !== null) add('weights', [roles.second, roles.final], 'Second year ' + roles.second + '%, final year ' + roles.final + '%', s);
-        else if (roles.final === 100) add('weights', [0, 100], 'Final year only', s);
+        if ((m = /\b(1|one)\s*:\s*(2|3|two|three)\b/i.exec(s)) && !keys.length) { var k = toNum(m[2]); ws = { 2: round1(100 / (1 + k)), final: round1(100 * k / (1 + k)) }; keys = ['2', 'final']; }
+        if (keys.length >= 2 || ws.final === 100) add('weights', ws, keys.map(function (k) { return (k === 'final' ? 'Final year' : 'Year ' + k) + ' ' + ws[k] + '%'; }).join(', '), s);
       }
       // Classification boundaries
       var names = [['first(?:[- ]class)?', 0], ['upper second|2[.:]1', 1], ['lower second|2[.:]2', 2], ['third(?:[- ]class)?', 3]];
@@ -145,7 +163,7 @@ window.GradewiseExtras = function (g) {
   function applyRules() {
     found.forEach(function (f) {
       if (!f.use) return;
-      if (f.key === 'weights') { state.scheme = 'custom'; state.w = f.value.slice(); g.sync(); }
+      if (f.key === 'weights') { state.scheme = 'custom'; applyWeights(state.years, f.value); g.sync(); }
       if (/^bound/.test(f.key)) state.rules.bounds[Number(f.key.slice(5))] = f.value;
     });
     syncRules(); save(); g.update();
