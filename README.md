@@ -79,12 +79,12 @@ Works in current versions of Chrome, Edge, Brave, Firefox and Safari, on compute
 
 Gradewise is a single page with no server. Your marks are stored only in your own browser's local storage on that device.
 
-The Moodle bookmark only talks to your own Moodle site, using the login you already have, and works everything out on the page. Regulations you upload are read in your browser and never leave your computer. **Save to Gradewise** passes your module marks to the website in the part of the address after the `#` sign, which browsers never send to a server, and Gradewise removes them from the address as soon as the page opens.
+The Moodle bookmark is a short loader: when you click it, it loads the Gradewise panel ([`docs/gradewise-panel.js`](docs/gradewise-panel.js), built from [`gradewise-import.js`](gradewise-import.js)) from the Gradewise site, so you always get the latest version without dragging the button again. The panel only talks to your own Moodle site, using the login you already have, and works everything out on the page. Regulations you upload are read in your browser and never leave your computer. **Save to Gradewise** passes your module marks to the website in the part of the address after the `#` sign, which browsers never send to a server, and Gradewise removes them from the address as soon as the page opens.
 
 
 ## Development 🧩
 
-The page lives in [`docs/`](docs): `gradewise.js` for the calculator and `gradewise-moodle.js` for saved Moodle marks and reading regulations. The Moodle bookmark is [`gradewise-import.js`](gradewise-import.js). After editing it, run `node build.js` to regenerate `bookmarklet.txt` and `docs/index.html` from `site/index.template.html`.
+The page lives in [`docs/`](docs): `gradewise.js` for the calculator and `gradewise-moodle.js` for saved Moodle marks and reading regulations. The Moodle panel's source is [`gradewise-import.js`](gradewise-import.js). After editing it, run `node build.js` to regenerate `docs/gradewise-panel.js` (minified if the `terser` package is installed), the short loader in `bookmarklet.txt`, and `docs/index.html` from `site/index.template.html`.
 
 
 ## Unikit 🎒
