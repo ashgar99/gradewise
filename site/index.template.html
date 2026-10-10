@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gradewise: work out your degree classification</title>
   <meta name="description" content="Gradewise is a free, open-source calculator for UK students that works out your degree classification so far and the marks you need for a First or a 2:1.">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -386,6 +386,79 @@
     details.paste summary { cursor: pointer; color: var(--soft); font-size: 14px; }
     details.paste textarea { margin-top: 10px; min-height: 120px; }
     @media (max-width: 560px) { .mod { grid-template-columns: minmax(0, 1fr) 72px 72px 36px; gap: 6px; } }
+
+    /* Light theme, for pages that set light: True */
+    :root {
+      --bg: #fbfbfd;
+      --surface: #fff;
+      --surface-2: #f2f2f5;
+      --line: rgba(0, 0, 0, 0.08);
+      --text: #1d1d1f;
+      --soft: rgba(29, 29, 31, 0.72);
+      --softer: rgba(29, 29, 31, 0.5);
+      --ink: #1d1d1f;
+      --fill: var(--accent-fill, var(--blue));
+      --on-blue: #1d1d1f;
+      --accent-text: #9a5d00;
+    }
+    nav { background: rgba(255, 255, 255, 0.72); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 30px rgba(0, 0, 0, 0.06); }
+    nav a.link, nav .get { color: var(--ink); }
+    nav .ver { color: #86868b; }
+    nav .get { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
+    .hero::before {
+      background:
+        linear-gradient(180deg, transparent 70%, var(--bg) 100%),
+        linear-gradient(211deg, transparent 54.6%, rgba(255, 255, 255, 0.85) 55%, transparent 55.6%),
+        linear-gradient(211deg, rgba(255, 255, 255, 0.45) 30%, rgba(255, 255, 255, 0.25) 54.9%, rgba(120, 80, 0, 0.05) 55.2%, rgba(120, 80, 0, 0.03) 68%, transparent 85%),
+        radial-gradient(ellipse 65% 75% at 80% 0%, rgba(var(--blue-rgb), 0.38), transparent 72%),
+        radial-gradient(ellipse 50% 45% at 18% 30%, rgba(var(--blue-rgb), 0.16), transparent 70%),
+        linear-gradient(180deg, #fff5df 0%, #fbf7ef 55%, var(--bg) 100%);
+    }
+    .hero::after { opacity: 0.35; mix-blend-mode: soft-light; }
+    .wordmark span { background: linear-gradient(to right, var(--blue-deep), var(--ink)); -webkit-background-clip: text; background-clip: text; }
+    .hero h1, h2, .quote p, .quote .qo, .quote .qc, .tile h3, .card h3, .app h3, .f-brand, .f-col h4, .stat .v, .kv b { color: var(--ink); }
+    .btn, .drag, .b.primary { background: var(--fill); color: var(--ink); }
+    .grab-demo .ghost { background: rgba(var(--blue-rgb), 0.9); color: var(--ink); }
+    .grab-demo .hand { filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.2)); }
+    .tile { background: #fff; box-shadow: inset 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, 0.04); }
+    .tile .n { background: var(--surface-2); color: var(--accent-text); }
+    .quote { box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08); }
+    kbd { background: var(--surface-2); color: var(--ink); }
+    .app { background: rgba(255, 255, 255, 0.86); box-shadow: inset 0 0 0 1px var(--line), 0 30px 80px rgba(0, 0, 0, 0.08); }
+    .panel { background: #fafafb; box-shadow: inset 0 0 0 1px var(--line); }
+    input[type=text], input[type=number], input[type=date], input[type=time], select, textarea {
+      background: #fff; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); color: var(--ink); color-scheme: light;
+    }
+    input:focus, select:focus, textarea:focus { background: #fff; box-shadow: inset 0 0 0 1px var(--accent-text), 0 0 0 4px rgba(var(--blue-rgb), 0.25); }
+    input::placeholder, textarea::placeholder { color: rgba(0, 0, 0, 0.35); }
+    input:disabled, select:disabled { opacity: 0.55; }
+    .b.ghost { background: var(--surface-2); color: var(--ink); box-shadow: none; }
+    .b.ghost:hover { background: #e8e8ed; }
+    .b.icon { color: #86868b; }
+    .stat .v.blue { background: linear-gradient(to right, var(--blue-deep), var(--ink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .kv { box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06); }
+    .pill { background: rgba(var(--blue-rgb), 0.22); color: #8a5300; }
+    .pill.good { background: #e3f6ea; color: #1a7f43; }
+    .pill.warn { background: #fff1d6; color: #8a5300; }
+    .pill.bad { background: #fde8e8; color: #b42318; }
+    .drop { background: #fff; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.1); color: var(--soft); }
+    .drop:hover, .drop.over { background: rgba(var(--blue-rgb), 0.1); box-shadow: inset 0 0 0 1.5px var(--accent-text); }
+    .drop svg, .note a, .made .sub a, .f-col a:hover, nav a.link:hover, .moodle-copy, .copy:hover { color: var(--accent-text); }
+    footer::before {
+      background:
+        radial-gradient(ellipse 60% 70% at 50% 92%, rgba(var(--blue-rgb), 0.45), transparent 72%),
+        radial-gradient(ellipse 38% 60% at 20% 96%, rgba(var(--blue-rgb), 0.35), transparent 72%),
+        radial-gradient(ellipse 38% 60% at 82% 96%, rgba(var(--deep-rgb), 0.25), transparent 72%);
+    }
+    footer::after { opacity: 0.3; mix-blend-mode: soft-light; }
+    .f-card { background: rgba(255, 255, 255, 0.72); box-shadow: inset 0 0 0 1px var(--line), 0 20px 60px rgba(0, 0, 0, 0.06); }
+    .target { background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+    .target b, .rule b { color: var(--ink); }
+    .bands { background: rgba(0, 0, 0, 0.06); }
+    .bands i { background: var(--ink); box-shadow: 0 0 0 2px #fff; }
+    .rule { background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+    details.paste summary { color: var(--soft); }
+    .rules-grid h4, .year-head h3 { color: var(--ink); }
 
   </style>
 </head>
