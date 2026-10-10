@@ -10,7 +10,9 @@
     { min: 50, name: 'Lower second (2:2)', short: 'a 2:2', tone: 'warn' },
     { min: 40, name: 'Third', short: 'a Third', tone: 'warn' }
   ];
-  var state = { scheme: '33,67', w: [33, 67], years: [[], []] };
+  var DEFAULT_RULES = { amt: '', unit: 'marks', per: 'calendar', zero: '', cap: '', floor: '', bounds: [70, 60, 50, 40] };
+  var state = { scheme: '33,67', w: [33, 67], years: [[], []], imp: null, rules: JSON.parse(JSON.stringify(DEFAULT_RULES)) };
+  function bounds() { return (state.rules && state.rules.bounds) || DEFAULT_RULES.bounds; }
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function num(v) { var n = parseFloat(v); return isFinite(n) ? n : null; }
@@ -66,8 +68,11 @@
     for (var i = 0; i < BANDS.length; i++) if (avg >= BANDS[i].min) return BANDS[i];
     return null;
   }
+  // Grade boundaries can come from your university's rules
+  function applyBounds() { bounds().forEach(function (b, i) { var n = num(b); if (n !== null) BANDS[i].min = n; }); }
 
   function update() {
+    applyBounds();
     var r = compute();
     $('done').textContent = r.doneC + ' of ' + r.totalC;
     if (r.current === null) {
@@ -153,13 +158,16 @@
     }
   });
   $('sample').onclick = sample;
-  $('reset').onclick = function () { state = { scheme: '33,67', w: [33, 67], years: blank() }; sync(); renderYears(); update(); };
+  $('reset').onclick = function () { state.scheme = '33,67'; state.w = [33, 67]; state.years = blank(); sync(); renderYears(); update(); };
 
   // Restore from this device
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (saved && saved.years && saved.years.length === 2) state = saved;
-    else state.years = blank();
+    if (saved && saved.years && saved.years.length === 2) {
+      state = saved;
+      if (!state.rules) state.rules = JSON.parse(JSON.stringify(DEFAULT_RULES));
+    } else state.years = blank();
   } catch (e) { state.years = blank(); }
   sync(); renderYears(); update();
+  if (window.GradewiseExtras) window.GradewiseExtras({ state: state, $: $, esc: esc, num: num, round1: round1, sync: sync, renderYears: renderYears, update: update, DEFAULT_RULES: DEFAULT_RULES });
 })();
